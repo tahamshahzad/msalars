@@ -1,10 +1,16 @@
+// turn to false if not using
+const useSendLane = false;
+
 const request = require("request");
 const express = require("express");
 
+// send lane api details
 const subdomain = "uusio";
 const apiKey = "269a2a12ceb913d";
 const hasKey = "c18976e60a72ab9a03ec4856dcfca693";
+//////////////////////////////////////////////////
 
+// dont touch
 const bodyParser = require("body-parser");
 const MySQL = require("./MySQL");
 const hubspot = require("./Hubspot");
@@ -44,7 +50,6 @@ function sendlaneUrlGenerator({ params, method }) {
     (string, key) => string.concat(`&${key}=${params[key]}`),
     ""
   );
-
   return `https://${subdomain}.sendlane.com/api/v1/${method}?api=${apiKey}&hash=${hasKey}${queryString}`;
 }
 
@@ -87,7 +92,8 @@ const larsFlow = {
     this.status = "running";
 
     console.log("started the flow");
-
+    
+    // hubspot account api key.
     this.hubspotInstance = hubspot("0d28007a-ff4c-41ed-ac5a-050b8c0ded05");
 
     this.mysqlConnection = new MySQL({
@@ -150,30 +156,33 @@ const larsFlow = {
           .then(response => {
             console.log("hubspot response", response);
             //send lane api
-            request.post(
-              sendlaneUrlGenerator({
-                params: {
-                  first_name: record.firstName,
-                  last_name: record.lastName,
-                  email: record.email,
-                  list_id: 1
-                },
-                method: "list-subscriber-add"
-              }),
-              (err, response) => {
-                if (!err) {
-                  console.log("response.body", response.body);
-                  if (index === results.length - 1) {
-                    this.sendNewRequest = true;
-                  }
-                } else {
-                  console.log("err", err);
-                  if (index === results.length - 1) {
-                    this.sendNewRequest = true;
+            if(useSendLane) {
+              request.post(
+                sendlaneUrlGenerator({
+                  params: {
+                    first_name: record.firstName,
+                    last_name: record.lastName,
+                    email: record.email,
+                    list_id: 1
+                  },
+                  method: "list-subscriber-add"
+                }),
+                (err, response) => {
+                  if (!err) {
+                    console.log("response.body", response.body);
+                    if (index === results.length - 1) {
+                      this.sendNewRequest = true;
+                    }
+                  } else {
+                    console.log("err", err);
+                    if (index === results.length - 1) {
+                      this.sendNewRequest = true;
+                    }
                   }
                 }
-              }
-            );
+              );
+            }
+            
           })
           .catch(error => {
             console.log(error.message);
