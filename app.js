@@ -92,7 +92,7 @@ const larsFlow = {
     this.status = "running";
 
     console.log("started the flow");
-    
+
     // hubspot account api key.
     this.hubspotInstance = hubspot("84fc8c6b-5b28-4024-b31c-fefd9d1dd4c2");
 
@@ -156,7 +156,7 @@ const larsFlow = {
           .then(response => {
             console.log("hubspot response", response);
             //send lane api
-            if(useSendLane) {
+            if (useSendLane) {
               request.post(
                 sendlaneUrlGenerator({
                   params: {
@@ -182,7 +182,6 @@ const larsFlow = {
                 }
               );
             }
-            
           })
           .catch(error => {
             console.log(error.message);
